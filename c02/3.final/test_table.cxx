@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+
 
 // horror: solo hay un departmento!
 // Pilas! Los horrores son senales para que Uds mejoren el programa
@@ -70,7 +72,7 @@ static int generate_file(int N, const char *filename) {
 // La forma elegante de hacer esto es usar un arreglo dinamico
 // Lo definimos asi para hacerlo mas facil e independiente de dynarray
 static int NS = 0;
-static const int CAPACITY = 10000;
+static const int CAPACITY = 100000;
 static Student *student[CAPACITY];
 
 // funcion privada: agrega un estudiante al arreglo, si hay espacio disponible
@@ -96,7 +98,45 @@ static int load_file(const char *filename) {
   // usen add_student para agregar cada estudiante al arreglo
   // esto garantiza que NS esta en sincronia
   // por ultimo, recuerden usar fclose para cerrar el archivo
+  FILE *in_file = fopen(filename, "r");
+  struct stat sb;
+  stat(filename, &sb);
+
+  char *file_contents = (char *)malloc(sizeof(char)*9999);
+  int p = 0;
+  while (fscanf(in_file, "%[^\n] ", file_contents) != EOF) {
+    printf("Hola %s contador %d\n", file_contents, p);
+    p++;
+    int i;
+    // allocate memory for the student and initialize fields
+    Student *student = (Student *) malloc(sizeof(Student));
+    int count = 0;
+    int j;
+    int k;
+    int l;
+    char* gpa = (char *)malloc(sizeof(char)*4);
+    for (i = 0; i < strlen(file_contents); i++) {
+      if (file_contents[i] == ',') {
+        if (count == 0) {
+          k = i +1;
+          memcpy(&student->sid, &file_contents[0], i);
+          count++;
+        } else if (count == 1) {
+          l = i + 1;
+          memcpy(&student->name, &file_contents[k], i);
+          count++;
+        } else if (count == 2) {
+          memcpy(&gpa, &file_contents[l], i);
+          student->gpa = atof(gpa);
+        }
+      }
+      student->dept = dept[0]; // horror: todos lo estudiantes estan en el mismo departamento!
+    }
+    add_student(student);
+  }
+
   fprintf(stdout, "Cargamos %d estudiantes\n", NS);
+  fclose(in_file);
   return 0;
 }
 
