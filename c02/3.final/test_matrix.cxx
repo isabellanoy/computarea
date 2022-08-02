@@ -94,15 +94,18 @@ static int test_matrix_sum(int M, int N) {
 
 /// prueba la multiplicacion de matrices
 static int test_matrix_mult(int M, int N, int K) {
-  // ...
-  // como deben imaginarse, deben crear una matrix lhs (MxN) y una matriz rhs (NxK)
-  // y una matriz res (MxK) correspondiente a lhs * rhs (multiplicacion de matrices)
-  // https://en.wikipedia.org/wiki/Matrix_multiplication
-  // muestren las 3 matrices en pantalla
-  //
-  // repetir lo anterior unas tres veces
-  // consideren casos especiales que facilitan verificar el resultado
-  // ...
+  Initializer sequence = get_initializer("i");
+  Initializer uniform =  get_initializer("u");
+
+  Matrix *lhs = matrix(M, N, sequence);
+  show_matrix("lhs", lhs);
+
+  Matrix *rhs = matrix(M, N, uniform);
+  show_matrix("rhs", rhs);
+
+  Matrix *mult = matrix_mult(lhs, rhs);
+  assert(mult != nullptr); // siempre es una buena idea chequear que no hubo error
+  show_matrix("mult", mult);
   return 0;
 }
 

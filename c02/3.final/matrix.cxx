@@ -78,7 +78,29 @@ Matrix *matrix_sum(const Matrix *lhs, const Matrix *rhs) {
 }
 
 Matrix *matrix_mult(const Matrix *lhs, const Matrix *rhs) {
-  // ... implementar y ... quitar lo que sigue: ¡OBVIAMENTE!
-  fprintf(stderr, "operacion matrix_mult no implementada\n");
-  return nullptr;
+  if (matrix_nc(lhs) != matrix_nr(rhs)){
+    printf("Las matrices no tienen el tamaño adecuado para multiplicarse\n");
+    return 0;
+  }
+
+  Matrix *result = (Matrix *) malloc(sizeof(Matrix));
+  result->NR = matrix_nr(rhs);
+  result->NC = matrix_nc(rhs);
+  result->data = (double **) malloc(result->NR * sizeof(double *));
+  size_t i;
+  size_t j;
+  size_t k;
+  for (size_t i = 0; i < result->NR; ++i) {
+    result->data[i] = (double *) malloc(result->NC * sizeof(double));
+  }
+  for (i = 0; i < matrix_nc(rhs); i++) {
+    for (j = 0; j < matrix_nr(lhs); j++) {
+        double suma = 0;
+        for (k = 0; k < matrix_nc(lhs); k++) {
+            suma += lhs->data[j][k] * rhs->data[k][i];
+        }
+        result->data[j][i] = suma;
+    }
+  }
+  return result;
 }
