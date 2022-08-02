@@ -89,15 +89,6 @@ static void add_student(Student *s) {
 }
 
 static int load_file(const char *filename) {
-  // horror, no nos dieron el codigo para leer el archivo!
-  // deben abrir el archivo para leer, no escribir
-  // deben usar fscanf en un lazo para leer un estudiante a la vez
-  // usar malloc para crear un estudiante en memoria dinamica ...
-  // ... de manera parecida a lo hecho en random_student
-  // de hecho, van a notar una oportunidad de factorizar codigo comun
-  // usen add_student para agregar cada estudiante al arreglo
-  // esto garantiza que NS esta en sincronia
-  // por ultimo, recuerden usar fclose para cerrar el archivo
   FILE *in_file = fopen(filename, "r");
   struct stat sb;
   stat(filename, &sb);
@@ -105,33 +96,14 @@ static int load_file(const char *filename) {
   char *file_contents = (char *)malloc(sizeof(char)*9999);
   int p = 0;
   while (fscanf(in_file, "%[^\n] ", file_contents) != EOF) {
-    printf("Hola %s contador %d\n", file_contents, p);
-    p++;
-    int i;
-    // allocate memory for the student and initialize fields
     Student *student = (Student *) malloc(sizeof(Student));
-    int count = 0;
-    int j;
-    int k;
-    int l;
-    char* gpa = (char *)malloc(sizeof(char)*4);
-    for (i = 0; i < strlen(file_contents); i++) {
-      if (file_contents[i] == ',') {
-        if (count == 0) {
-          k = i +1;
-          memcpy(&student->sid, &file_contents[0], i);
-          count++;
-        } else if (count == 1) {
-          l = i + 1;
-          memcpy(&student->name, &file_contents[k], i);
-          count++;
-        } else if (count == 2) {
-          memcpy(&gpa, &file_contents[l], i);
-          student->gpa = atof(gpa);
-        }
-      }
-      student->dept = dept[0]; // horror: todos lo estudiantes estan en el mismo departamento!
-    }
+    student->sid = (char *)malloc(sizeof(char)*9);
+    student->name = (char *)malloc(sizeof(char)*15);
+    student->dept = (char *)malloc(sizeof(char)*30);
+    student->sid = strtok(file_contents, ",");
+    student->name = strtok(NULL, ",");
+    student->name = student->name + 1;
+    student->gpa = atof(strtok(NULL, ","));
     add_student(student);
   }
 
@@ -143,6 +115,25 @@ static int load_file(const char *filename) {
 // ordena un arreglo de estudiantes ...
 // de hecho cualquier arreglo de apuntadores a estudiantes (convenzanse!)
 static void sort(int N, Student *s[]) {
+  
+  int i, j, min_idx;
+  for (i = 0; i < N-2; i++){
+    min_idx = i;
+    for (j = i+1; j < N - 2; j++){
+      if (strcmp(s[j]->sid, s[min_idx]->sid) < 0){
+        min_idx = j;
+      }
+    }
+    Student *studentTemp = (Student *) malloc(sizeof(Student));
+    studentTemp->sid = (char *)malloc(sizeof(char)*9);
+    studentTemp->name = (char *)malloc(sizeof(char)*15);
+    studentTemp->dept = (char *)malloc(sizeof(char)*30);
+    *studentTemp = *s[min_idx];
+    *s[min_idx] = *s[i];
+    *s[i] = *studentTemp;
+    free(studentTemp);
+  }
+  
   // horror: no nos dijeron como ordenar!
   // porque ya saben como hacerlo (duh!) es una adaptacion sencilla de la tarea anterior
   // usar el algoritmo "selection sort" en el arreglo s, de 0 (incluido) a N (no incluido)
@@ -158,8 +149,8 @@ static void sort(int N, Student *s[]) {
 // salvar los estudiantes en memoria, escribiendolos en un archivo
 static int save_file(int N, Student *s[], const char *filename) {
   FILE *file = fopen(filename, "w");
-  for (int i = 0; i < N; ++i) {
-    // anadir el estudiante al archivo (ver generate_file, despues de mejorarlo)
+  for (int i = 0; i < N - 1; ++i) {
+    fprintf(file, "%s, %s, %4.2f\n", s[i]->sid, s[i]->name, s[i]->gpa);
   }
   fclose(file);
   return 0;
