@@ -45,11 +45,12 @@ Dynarray *dynarray(size_t N, Initializer init) {
   return dyna;
 }
 
-void dyna_destroy(Dynarray **dynarray) {
-  // ... implementar
+void dyna_destroy(Dynarray *dynarray) {
   // liberar las areas de memoria reservadas por malloc
   // ademas, la ultima instruccion debe anular el dynarray mismo
   // la idea es evitar que el usuario se refiera a memoria liberada
+  free(dynarray->data);
+  free(dynarray);
 }
 
 double dyna_val(size_t i, const Dynarray *dyna) {
@@ -87,29 +88,111 @@ size_t dyna_size(const Dynarray *dyna) {
 }
 
 void dyna_insert(Dynarray *dyna, int pos, int N, Initializer init) {
-  // ... implementar
+
+  // Si pos se sale del rango
+  if (pos < 0 || pos > dyna->size){
+    printf("Pos no cumple con la condicion");
+    return;
+  }
+
+  // Si hay espacio
+  if (dyna->capacity - dyna->size >= N){
+
+    dyna->size = dyna->size + N;
+    double prevArr[N];
+    size_t i;
+
+    // Copiando vieja informacion y generando la nueva
+    for (i = pos; i < pos + N; i++){
+      prevArr[i] = dyna->data[i];
+      dyna->data[i] = init(i);
+    }
+
+    for (i = pos + N; i < dyna->size; i++){
+      dyna->data[i] = prevArr[i];
+    }
+
+  // Si no hay espacio
+  } else {
+    int prevSize = dyna->size;
+    double prevArr[prevSize];
+    size_t i;
+    size_t j;
+    dyna->capacity = dyna->capacity + N;
+    dyna->size = dyna->size + N;
+
+    // Copiando vieja informacion y generando la nueva
+    for (i = 0; i < prevSize; i++){
+      prevArr[i] = dyna->data[i];
+    }
+
+    free(dyna->data);
+    dyna->data = (double *) malloc(dyna->capacity * sizeof(double));
+
+    for (i = 0; i < pos; i++){
+      dyna->data[i] = prevArr[i];
+    }
+
+    for (j = pos; j < pos + N; j++){
+      dyna->data[j] = init(i);
+    }
+
+    for (j = pos + N; j < dyna->size; j++){
+      dyna->data[j] = prevArr[i];
+      i++;
+    }
+  }
+
+
 }
 
 void dyna_remove(Dynarray *dyna, int pos, int N) {
-  // ... implementar
+// Si pos se sale del rango
+  if (pos < 0 || N > dyna->size - pos){
+    printf("Pos no cumple con la condicion");
+    return;
+  }
+
+  size_t i;
+
+  for (i = pos + N; i < dyna->size; i++){
+    dyna->data[i - N] = dyna->data[i];
+  }
+
+  dyna->size = dyna->size - N;
 }
 
 void dyna_sort(Dynarray *dyna) {
-  // ... implementar
+  size_t i;
+  size_t j;
+  double a;
+  for (i = 0; i < dyna->size; ++i) {
+    for (j = i + 1; j < dyna->size; ++j){
+      if (dyna->data[i] > dyna->data[j]) {
+        a =  dyna->data[i];
+        dyna->data[i] = dyna->data[j];
+        dyna->data[j] = a;
+      }
+    }
+  }
 }
 
 Dynarray *dyna_concatenate(const Dynarray *dyna1, const Dynarray *dyna2) {
 
-  // eliminen este mensaje: SIEMPRE deben eliminar trazas como esta al completar
-  // igual para trazas de "debugging", a menos que sean "guardadas" por condicionales
-  fprintf(stderr, "WARNING: dyna_concatenate: not implemented\n");
-
   size_t S1 = dyna1->size;
   size_t S2 = dyna2->size;
+  size_t C1 = dyna1->capacity;
+  size_t C2 = dyna2->capacity;
+  size_t i;
   Dynarray *result = (Dynarray *) malloc(sizeof(Dynarray));
-  result->size = 0; // <<< cambiar y completar
-  result->capacity = 0; // <<< cambiar y completar
-  result->data = nullptr; // <<< cambiar y completar
-  // ... completar
+  result->size = S1 + S2;
+  result->capacity = C1 + C2;
+  result->data = (double *) malloc(result->capacity * sizeof(double));
+  for (i = 0; i < S1; i++){
+    result->data[i] = dyna1->data[i];
+  }
+  for (i = 0; i < S2; i++){
+    result->data[S1 + i] = dyna2->data[i];
+  }
   return result;
 }

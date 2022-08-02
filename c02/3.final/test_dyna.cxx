@@ -44,6 +44,12 @@ int test_dynamic_arrays(int argc, const char *argv[]) {
 
   Dynarray *x = dynarray(NX, init_x);
   show_dynarray(x);
+  dyna_insert(x, 2, 5, init_x);
+  show_dynarray(x);
+  dyna_remove(x, 3, 4);
+  show_dynarray(x);
+  dyna_sort(x);
+  show_dynarray(x);
 
   // si argc es mayor o igual a 4, usar el parametro provisto
   const size_t NY_DEFAULT = 16;
